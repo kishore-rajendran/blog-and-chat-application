@@ -1,0 +1,13 @@
+<% include layh.ejs%>
+<h1><%=articles.title%></h1>
+<br>
+ <h6>posted by : <%=author%></h6>
+<br><br>
+<p><%=articles.body%></p>
+<br>
+<%if(user){if(user.id==articles.author){%>
+<a class="btn btn-primary" href="/articles/edit/<%=articles._id%>">Edit</a>
+
+<a class="btn btn-danger delete-article" href="#" data-id=<%=articles._id%>>Delete</a>
+<%}}%>
+<% include layf.ejs%>

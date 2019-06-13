@@ -1,0 +1,20 @@
+<% include layh.ejs%>
+<% if(errors) for (var i = 0; i < errors.length; i++) { %>
+  <div class="alert alert-danger"><%=errors[i].msg%></div>
+  <% } %>
+<h1><%=title%></h1>
+
+<form method="post" action="/articles/edit/<%=articles._id%>">
+<div id="form-group">
+  <label>Title :</label>
+  <input class="form-control" name='title' type="text" value="<%=articles.title%>"></input>
+</div>
+<div id="form-group">
+  <label>Body :</label>
+  <textarea class="form-control" name='body'><%=articles.body%></textarea>
+</div>
+<br>
+<input class="btn btn-primary" type="submit" value="submit"></input>
+
+</form>
+<% include layf.ejs%>

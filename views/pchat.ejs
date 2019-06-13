@@ -1,0 +1,207 @@
+<% include layh.ejs%>
+<div class="container" style="width:80%; display:inline-block;" >
+  <%if(user.username === chat.id1){
+    var receiver=chat.id2;%>
+<h2><%=chat.id2%></h2>
+<%}
+else if(user.username===chat.id2){
+  var receiver=chat.id1;%>
+<h1><%=chat.id1%></h1>
+<%}%>
+<div id="chatscroll" style="overflow-y:scroll; overflow-x:hidden; height:400px;">
+</div>
+      <br>
+        <div class="input-group mb-3">
+
+    <textarea id='txtarea' class='form-control' placeholder="Enter the message..."></textarea>
+    <input class="btn btn-primary" type="button" id="send" value="Send"></input>
+</div>
+  </div>
+<% include layf.ejs%>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js">
+</script>
+
+<script>//onscroll make yesterday change find the dates by knowing the embedde dates in the chat and first of all embed the dates in the chat
+  (function(){
+    var element = function(id){
+      return document.getElementById(id);
+    }
+    var txtarea=element('txtarea');
+    var send=element('send');
+    var chatscroll=element('chatscroll');
+    var ml=-20;
+    var mid=1;
+    var socket=io.connect('http://127.0.0.1:4000');
+    var t_ref=new Date(Date.now());
+    if(socket !== undefined){
+      socket.on('output',function(chat11){
+        var chat=chat11.chat;
+        items=document.querySelectorAll(".msg1");
+        var sl=items.length;
+        //console.log(chat);
+        if(chat.length){
+          for(var i=0;i<chat.length;i++){
+            var list = document.createElement("div");
+            var date = document.createElement("div");
+            date.setAttribute('class','date');
+            list.setAttribute('id',mid);
+            if(chat11.flag==1){
+              list.setAttribute('id',"new");
+            }
+            mid+=1;
+            var paragraph = document.createElement("p");
+            var spanning = document.createElement("span");
+            spanning.classList.add("time-right");
+            var t=new Date(chat[i].date);
+            if(t=="Invalid Date"){
+               t=new Date(Date.now());
+            }
+            var t1=t;
+            var att = document.createAttribute("data-toggle");
+            var att1 = document.createAttribute("data-placement");
+            var att2 = document.createAttribute("title");
+            att.value="tooltip";
+            att1.value="bottom";
+            att2.value=t;
+            spanning.setAttributeNode(att);
+            spanning.setAttributeNode(att1);
+            spanning.setAttributeNode(att2);
+            var ref=new Date(Date.now());
+            t=t.toLocaleTimeString('en-US');
+            (t.substring(4,5)==":")?t=t.substring(0,4)+" "+t.substring(8):t=t.substring(0,5)+" "+t.substring(8);
+            spanning.innerHTML=t;
+            var mybr = document.createElement('br');
+            paragraph.appendChild(document.createTextNode(chat[i].name+": "+chat[i].message));
+            paragraph.appendChild(mybr);
+            paragraph.appendChild(spanning);
+            if("<%=user.username%>" === chat[i].name){
+                list.setAttribute('class','container1 darker msg1');
+                list.appendChild(paragraph);
+                if(chat11.flag==0){
+                  if(t1.toISOString().slice(0,10).split("-").reverse().join("-") != t_ref.toISOString().slice(0,10).split("-").reverse().join("-")){
+                    (ref.getTime()-t_ref.getTime()<172800000)?(ref.getDate()-t_ref.getDate()==0)?date.innerHTML="Today":date.innerHTML="Yesterday":date.innerHTML=t_ref.toISOString().slice(0,10).split("-").reverse().join("-");
+                  chatscroll.insertBefore(date,chatscroll.firstChild);
+                }
+                chatscroll.insertBefore(list,chatscroll.firstChild);
+              }
+                else{
+                  chatscroll.appendChild(list);
+                }
+                //(ref.getTime()-t1.getTime()<172800000)?(ref.getDate()-t1.getDate()==0)?date.innerHTML="Today":date.innerHTML="Yesterday":date.innerHTML=t_ref.toISOString().slice(0,10).split("-").reverse().join("-");
+                //date.innerHTML=t_ref.toISOString().slice(0,10).split("-").reverse().join("-");
+             t_ref=t1;
+              /*var message = document.createElement('div');
+              message.setAttribute('class','container1 darker');
+              message.textContent = chat[i].name+": "+chat[i].message;
+              chatscroll.appendChild(message);*/
+          }
+          else{
+                  list.setAttribute('class','container1 msg1');
+                  list.appendChild(paragraph);
+                  if(chat11.flag==0){
+                    if(t1.toISOString().slice(0,10).split("-").reverse().join("-") != t_ref.toISOString().slice(0,10).split("-").reverse().join("-")){
+                    (ref.getTime()-t_ref.getTime()<172800000)?(ref.getDate()-t_ref.getDate()==0)?date.innerHTML="Today":date.innerHTML="Yesterday":date.innerHTML=t_ref.toISOString().slice(0,10).split("-").reverse().join("-");
+                    chatscroll.insertBefore(date,chatscroll.firstChild);
+                  }
+                  chatscroll.insertBefore(list,chatscroll.firstChild);
+                }
+                  else{
+                    chatscroll.appendChild(list);
+                  }
+                  //(ref.getTime()-t1.getTime()<172800000)?(ref.getDate()-t1.getDate()==0)?date.innerHTML="Today":date.innerHTML="Yesterday":date.innerHTML=t_ref.toISOString().slice(0,10).split("-").reverse().join("-");
+                  //date.innerHTML=t_ref.toISOString().slice(0,10).split("-").reverse().join("-");
+                  t_ref=t1;
+          /*  var message = document.createElement('div');
+            message.setAttribute('class','container1');
+            message.textContent = chat[i].name+": "+chat[i].message;
+            chatscroll.appendChild(message);*/
+          }
+
+          $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip({delay:{show:900}});
+          });
+          objDiv.scrollTop = objDiv.scrollHeight;
+        }
+      }
+      items=document.querySelectorAll(".msg1");
+      var ll=items.length
+      last=items[ll-sl];
+      if(last!=undefined && chat11.flag!=1)
+      last.scrollIntoView();
+    });
+          document.addEventListener('DOMContentLoaded',function(){
+          console.log("hi");
+          socket.emit('new user',{
+            user:"<%=user.username%>",
+            chatid:"<%=chat.id%>"
+          });
+          });
+          $("#chatscroll").scrollTop($("#chatscroll")[0].scrollHeight);
+// Assign scroll function to chatscroll DIV
+        $('#chatscroll').scroll(function(){
+        if ($('#chatscroll').scrollTop() == 0){
+        socket.emit('load message',{
+          user:"<%=user.username%>",
+          chatid:"<%=chat.id%>",
+          ml:ml
+        });
+        ml=ml-10;
+      //  $('#chatscroll').scrollTop(1000);
+        }
+        });
+          txtarea.addEventListener('keydown',function(e){
+            if(e.keyCode===13){
+              e.preventDefault();
+              sending();
+              txtarea.value = "";
+            }
+          });
+          function sending(){
+            console.log("hi");
+            if(txtarea.value=="" || trim(txtarea.value)==''){txtarea.value = "";}else{
+            socket.emit('input',{
+            chatid:"<%=chat.id%>",
+            user:"<%=user.username%>",
+            receiver:"<%=receiver%>",
+            chat1:{
+            name:"<%=user.username%>",
+            message:txtarea.value
+            }
+          });
+        }
+      }
+      function trim (str) {
+      str = str.replace(/^\s+/, '');
+      for (var i = str.length - 1; i >= 0; i--) {
+      if (/\S/.test(str.charAt(i))) {
+            str = str.substring(0, i + 1);
+            break;
+          }
+        }
+      return str;
+      }
+
+      send.addEventListener('click',function(){
+        sending();
+        txtarea.value = "";
+        });
+            //var objDiv = document.getElementById("chatscroll");
+            //objDiv.scrollTop = objDiv.scrollHeight;
+    }
+
+    var objDiv = document.getElementById("chatscroll");
+    objDiv.scrollTop = objDiv.scrollHeight;
+  })();
+</script>
+<script>
+$(document).ready(function(){
+  $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous">
+</script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous">
+</script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous">
+</script>

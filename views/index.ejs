@@ -1,0 +1,12 @@
+<% include layh.ejs%>
+<h1><%=title%></h1>
+<ul class'list-group'>
+<% articles.forEach(function(item){%>
+  <li class="list-group-item">
+  <a href="/articles/<%=item._id%>">
+<%=item.title%><br>
+<%});%>
+</a>
+</li>
+</ul>
+<% include layf.ejs%>

@@ -1,0 +1,19 @@
+<% include layh.ejs%>
+<% if(errors) for (var i = 0; i < errors.length; i++) { %>
+  <div class="alert alert-danger"><%=errors[i].msg%></div>
+  <% } %>
+<h1>Login</h1>
+<form method="post" action="/users/login">
+  <div id="form-group">
+    <label>username :</label>
+    <input class="form-control" name='username' type="text"></input>
+  </div>
+  <div id="form-group">
+    <label>password :</label>
+    <input class="form-control" name='password' type="password"></input>
+  </div>
+  <br>
+  <input class="btn btn-primary" type="submit" value="Login"></input>
+
+  </form>
+  <% include layf.ejs%>

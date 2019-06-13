@@ -1,0 +1,30 @@
+<% include layh.ejs%>
+<div class="container">
+  <h1>Chats</h1>
+  <form method="post" action="/chats/new">
+
+<div class="input-group mb-3">
+  <input type="text" class="form-control col-3" placeholder="Recipient's username" name='rname'>
+  <div class="input-group-append">
+    <button class="btn btn-primary" type="submit">New</button>
+  </div>
+</div>
+  </form>
+  <ul class'list-group'>
+  <% for(var i=0;i<chat.length;i++){
+    if(uname === chat[i].id1){%>
+    <li class="list-group-item">
+    <a href="/chats/<%=chat[i]._id%>">
+  <%=chat[i].id2%><br>
+  <%}
+else if(uname===chat[i].id2){%>
+  <li class="list-group-item">
+  <a href="/chats/<%=chat[i]._id%>">
+<%=chat[i].id1%><br>
+  <%}}%>
+  </a>
+  </li>
+  </ul>
+<% include layf.ejs%>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js">
+</script>

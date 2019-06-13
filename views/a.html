@@ -1,0 +1,230 @@
+<%for (var i = 0; i < chats.length; i++){
+  if(user.username === chats[i].name){%>
+  <div class="container1 darker">
+    <p><%=chats[i].name%> : <%=chats[i].message%><br>
+    <span class="time-right" data-toggle="tooltip" data-placement="bottom" title="<%=chats[i].date%>"><%
+      var event=new Date(chats[i].date);
+      var time=event.toLocaleTimeString('en-US');
+      if(time.substring(4,5)==":"){
+      time=time.substring(0,4)+" "+time.substring(8);
+    }else{
+      time=time.substring(0,5)+" "+time.substring(8);
+    }
+      %><%=time%></span></p>
+  </div>
+<%} else {%>
+  <div class="container1">
+  <p><%=chats[i].name%> : <%=chats[i].message%><br>
+  <span class="time-right" data-toggle="tooltip" data-placement="bottom" title="<%=chats[i].date%>"><%
+    var event=new Date(chats[i].date);
+    var time=event.toLocaleTimeString('en-US');
+    if(time.substring(4,5)==":"){
+    time=time.substring(0,4)+" "+time.substring(8);
+    }else{
+    time=time.substring(0,5)+" "+time.substring(8);
+    }
+    %><%=time%></span></p>
+</div>
+  <%}}%>
+
+
+
+  
+  var message = document.createElement('div');
+  message.setAttribute('class','container1 darker');
+  var para=document.createElement("p";
+  var spanning=document.createElement('span');
+  spanning.classList.add("time-right");
+  var t=new Date(Date.now());
+  t=t.toLocaleTimeString('en-US');
+  t=t.substring(0,4)+" "+t.substring(8);
+  spanning.innerHTML=t;
+  para.appendChild(document.createTextnode(chat[i].name+": "+chat[i].message));
+  para.appendChild(spanning);
+  message.appendChild(para);
+  document.getElementById("chatscroll").appendChild(message);
+
+
+
+
+  var express=require('express');
+  var router=express.Router();
+  var client=require('socket.io').listen(4000).sockets;
+  var Chat=require('../models/chat');
+  var User=require('../models/user');
+  var con="disconnected";
+  var q;
+  var errors={};
+  router.get('/',ensureAuthenticated,function(req,res){
+    //using chat constructor which is connected to db we are finding the values
+    Chat.find({},function(err,chat){
+      if(err){
+        console.log(err);
+      }
+      else{
+      res.render('chat',{
+        errors:errors,
+        chat:chat
+      });
+    }
+    });
+  });
+  router.get('/:id',ensureAuthenticated,function(req,res){
+      //conection with db
+      var query={_id:req.params.id};
+        Chat.findById(req.params.id,function(err,chat){
+          if(con=="disconnected"){
+          connect(query);
+        };
+        //  console.log(chat.msg);
+            if(err){
+              throw err;
+            }
+            res.render('pchat',{
+              chat:chat,
+              chats:chat.msg,
+              user:req.user,
+              errors:errors
+            });
+  });
+  });
+  function connect(query){
+    q=query;
+    console.log("hi");
+  client.on('connection',function(socket){
+  //emitting the messages
+  con="connected";
+  //socket.emit('output',chat.msg);
+  socket.on('input',function(chat){
+  Chat.updateOne(query,{$push:{msg:chat}},function(){
+  client.emit('output',[chat]);
+  });
+  });
+  });
+  };
+
+
+    /*Chat.findById(req.params.id,function(err,chat){
+      res.render('pchat',{
+        chat:chat,
+        chats:chat.msg,
+        user:req.user,
+        errors:errors
+      });
+    });*/
+
+
+  router.post('/new',ensureAuthenticated,function(req,res){
+    var query={username:req.body.rname};
+    User.find(query,function(err,user1){
+      if(typeof user1[0] === "undefined"){
+        req.flash('danger','Reciever ID not found');
+        res.redirect('/chats/');
+      }
+      else{
+        var chat = new Chat();
+        chat.id1=req.user.username,
+        chat.id2=req.body.rname,
+        chat.msg=[{
+          name:"NodeKb",
+          message:"Now you are connected"
+        }]
+        chat.save(function(err){
+          if(err){
+          console.log(err);
+          return;
+        }
+        else{
+          req.flash('success','Connected');
+          res.redirect('/chats/');
+        }
+        });
+  }
+  });
+  });
+
+  /*router.post("/:id",function(req,res){
+    console.log(req.body);
+    var query ={_id:req.params.id};
+
+    Chat.updateOne(query,{$push:{msg:req.body}},function(err){
+      if(err){
+      res.sendStatus(500);
+      return;
+    }
+    else{
+      //res.sendStatus(200);
+      Chat.findById(req.params.id,function(err,chat){
+        res.render('pchat',{
+          chat:chat,
+          chats:chat.msg,
+          user:req.user,
+          errors:errors
+        });
+      });
+    }
+  });
+  });*/
+
+  function ensureAuthenticated(req,res,next){
+    if(req.isAuthenticated()){
+      return next();
+    }
+    else{
+      req.flash('danger','Please login');
+      res.redirect('/users/login');
+    }
+  }
+
+  module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<title>Creating a Chat Application in Node JS with Express, MongoDB, Mongoose and Socket.io</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<div class="container">
+    <br>
+    <div class="jumbotron">
+        <h1 class="dispaly-4">Start Chatting</h1>
+        <br>
+        <input id="txtName" class="form-control" placeholder="Name" type="text">
+        <br>
+        <textarea id="txtMessage" class="form-control" placeholder="Message"></textarea>
+        <br>
+        <button id="send" class="btn btn-success">Send</button>
+    </div>
+    <div id="messages"></div>
+</div>
+<script>
+    $(() => {
+        $("#send").click(() => {
+            var chatMessage = {
+                name: $("#txtName").val(), chat: $("#txtMessage").val()
+            }
+            postChat(chatMessage)
+        })
+    })
+    function postChat(chat){
+        console.log(chat)
+    }
+</script>
